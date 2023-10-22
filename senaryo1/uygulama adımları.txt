@@ -1,0 +1,63 @@
+1) Flask uygulamasını oluşturdum
+> "app.py" , "requirements.txt"
+
+
+2) Docker ile flask uygulaması için gereken ortamları içeren imaj yapılandırmalarını oluşturdum.
+> "Dockerfile" : docker imaj yapılandırmalarını içeren dosyadır.
+
+
+3) Docker imajını build ve run ederek imajı container halinde test ettim.
+> "docker get images                 "  : var olan docker imajlarını listeler.
+> "docker build -t flask-web-app:v1 ."  : bulunduğu dizin içerisinde Dockerfile bulup gerekli aksiyonları (build) gerçekleştirir.
+> "docker run flask-web-app:v1       "  : flask-web-app:v1 imajını çalıştırmak için test etmek üzere yürüttüğüm komut.
+
+
+
+4) "flask-deployment.yaml" oluşturarak ilgili imajı bu deployment yapısı ile çalıştırdım ;
+> Kubernetes ile imaja erişim problemi yaşadım ve bu problemi şu adımları izleyerek çözümledim ;
+Kubernetes düğümlerinde imaj'a erişmek ve çalıştırabilmek için imajı hub.docker registry'e iletme sürecini yürüttüm.
+>"docker login                                          	   " : docker'a kimlik doğrulama yaparak giriş yapmak için.
+>"docker tag osmankaradeniz31:v1 osmankaradeniz31/flask-web-app:v1 " : imaj'ı etiketleyerek registry'e iletmek üzere hazırlamak için.
+>"docker push osmankaradeniz31/flask-web-app:v1          	   " : imajı giriş yapılan kullanıcının repository içerisine göndermek için.
+
+>"kubectl create -f deployment.yaml" : kubernetes ile yazdığım deployment'i düğümlere yansıtıp oluşturuyorum.
+>"kubectl get pods                 " : gözlemleyebilmek için pod'ları listeliyorum
+>"kubectl describe pod 'pod_name'  " : ilgili pod'ların detaylarını inceledim ve ip bilgisini aldım.
+>"curl ip:port                     " : pod'lardan birine istek oluşturup uygulamamın çalışıp çalışmadığını kontrol ettim.
+>"kubectl get deployments          " : oluşturulan/var olan deployment bilgilerini listeledim ve gözlemledim.
+
+
+
+5) "flask-rs.yaml" oluşturarak ilgili imajı "ReplicaSet" yapısı ile çalıştırdım ; 
+ReplicaSet, bir pod'un yalnızca istenen sayıda kopyasını yönetir , güncelleme ve rollback durumlarını yönetme yeteneği yoktur kesinti oluşur. 
+Deployment, uygulamanın güncellemelerini ve rollback sağlayan bir mekanizma sağlayarak sorunsuz güncellemelere olanak tanır ve kesinti süresini azaltır.
+ilgili kodlar deployment'ta olduğu şekilde yürütüldü.
+>"kubectl create -f flask-rs.yaml"
+>"kubectl get pods"
+>"kubectl get replicasets"	
+
+
+
+6)ClusterIP tipi Servis oluşturdum ve bu servis üzerinden web uygulamasına eriştim ; 
+Podlar çalıştığında, bu podlara doğrudan IP adresleri ile erişmek yerine Kubernetes içinde hizmetler (Services) kullanılması önerilir. 
+Hizmetler, podlara erişimi daha kolay ve esnek bir şekilde yönetmemizi sağlar. 
+Bu nedenle, uygulamaya erişmek için hizmetler kullanmak daha iyi bir uygulama dağıtımı yöntemidir.
+ClusterIP tipinde bir servis oluşturup bu servis üzerindeki yapılandırmaya göre uygulamaya özel IP üzerinden erişmek için.
+>"flask-server.yaml" dosyasını oluşturduk
+>kubectl create -f flask-server.yaml : servisi oluşturmak için yürüttüğüm komut.
+>kubectl get services   : servisleri listledim ve oluşturduğum servisin bilgilerini (ıp adresi) kontrol ettim
+>curl servis-cluster-ıp : oluşturulan servisi oluşturduğum web uygulaması ile servis dosyasında ilişkilendirdiğim için istek göndererek test ettim.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
